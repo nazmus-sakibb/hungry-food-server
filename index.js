@@ -28,15 +28,29 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+        const usersCollection = client.db("hungryDb").collection("users");
         const menuCollection = client.db("hungryDb").collection("menu");
         const reviewsCollection = client.db("hungryDb").collection("reviews");
         const cartCollection = client.db("hungryDb").collection("carts");
 
+
+
+        // users related apis
+        app.post('/users', async(req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        })
+
+
+        // menu related apis
         app.get('/menu', async (req, res) => {
             const result = await menuCollection.find().toArray();
             res.send(result);
         })
 
+
+        // review related apis
         app.get('/reviews', async (req, res) => {
             const result = await reviewsCollection.find().toArray();
             res.send(result);
@@ -58,7 +72,6 @@ async function run() {
 
         app.post('/carts', async (req, res) => {
             const item = req.body;
-            console.log(item);
             const result = await cartCollection.insertOne(item);
             res.send(result);
         })
