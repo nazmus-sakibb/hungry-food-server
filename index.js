@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -53,8 +54,9 @@ async function run() {
         });
 
         // update user role
-        app.patch('users/admin/:id', async (req, res) => {
+        app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
+            console.log(id);
             const query = { _id: new ObjectId(id) };
             const updateDoc = {
                 $set: {
