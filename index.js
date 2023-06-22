@@ -35,6 +35,14 @@ async function run() {
         const cartCollection = client.db("hungryDb").collection("carts");
 
 
+        // jwt token 
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+            res.send(token);
+        })
+
+
 
         // users related apis
         app.get('/users', async (req, res) => {
