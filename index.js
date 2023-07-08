@@ -68,10 +68,10 @@ async function run() {
             const email = req.decoded.email;
             const query = { email: email };
             const user = await usersCollection.findOne(query);
-            if(user?.role !== 'admin'){
-                return res.status(403).send({error: true, message: 'Forbidden access'});
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ error: true, message: 'Forbidden access' });
             }
-            next(); 
+            next();
         }
 
 
@@ -140,16 +140,24 @@ async function run() {
         })
 
 
+        app.post('/menu', verifyJWT, verifyAdmin, async (req, res) => {
+            const newItem = req.body;
+            const result = await menuCollection.insertOne(newItem);
+            res.send(result);
+        })
+
+        // delete menu item
+        app.delete('/menu/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await menuCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
         // review related apis
         app.get('/reviews', async (req, res) => {
             const result = await reviewsCollection.find().toArray();
-            res.send(result);
-        })
-        
-
-        app.post('/menu',verifyJWT, verifyAdmin, async(req, res) => {
-            const newItem = req.body;
-            const result = await menuCollection.insertOne(newItem);
             res.send(result);
         })
 
