@@ -49,10 +49,13 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+
         const usersCollection = client.db("hungryDb").collection("users");
         const menuCollection = client.db("hungryDb").collection("menu");
         const reviewsCollection = client.db("hungryDb").collection("reviews");
         const cartCollection = client.db("hungryDb").collection("carts");
+        const paymentCollection = client.db("hungryDb").collection("payments");
+
 
 
         // jwt token 
@@ -196,9 +199,9 @@ async function run() {
 
 
         // Stripe - create payment intent
-        app.post('/create-payment-intent', async(req, res) => {
-            const {price} = req.body;
-            const amount = price*100;
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
@@ -207,6 +210,14 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret
             });
+        });
+
+
+        // payment related api
+        app.post('/payments', verifyJWT, async (req, res) => {
+            const payment = req.body;
+            const result = await paymentCollection.insertOne(payment);
+            res.send(result);
         })
 
 
