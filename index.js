@@ -233,7 +233,8 @@ async function run() {
 
             // best way to get sum of the price feild is to use group and sum operator
             const payments = await paymentCollection.find().toArray();
-            const revenue = payments.reduce((sum, payment) => sum + payment.price, 0)
+            const revenue = payments.reduce((sum, payment) => sum + payment.price, 0).toFixed(2);
+
 
             res.send({
                 revenue,
@@ -242,6 +243,40 @@ async function run() {
                 orders
             })
         })
+
+
+        // admin dashboard stats
+        app.get('/order-stats',verifyJWT, verifyAdmin, async (req, res) => {
+            const pipeline = [
+                {
+                    $lookup: {
+                        from: 'menu',
+                        localField: 'menuItems',
+                        foreignField: '_id',
+                        as: 'menuItemsInfo'
+                    }
+                },
+                {
+                    $unwind: '$menuItemsInfo'
+                },
+                {
+                    $group: {
+                        _id: '$menuItemsInfo.category',
+                        total: { $sum: '$menuItemsInfo.price' }
+                    }
+                },
+                {
+                    $project: {
+                        category: '$_id',
+                        total: { $round: ['$total', 2] },
+                        _id: 0
+                    }
+                }
+            ];
+
+            const result = await paymentCollection.aggregate(pipeline).toArray();
+            res.send(result);
+        });
 
 
         // Send a ping to confirm a successful connection
