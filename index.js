@@ -218,10 +218,29 @@ async function run() {
             const payment = req.body;
             const insertResult = await paymentCollection.insertOne(payment);
 
-            const query = {_id: {$in: payment.cartItems.map(id => new ObjectId(id) )}};
+            const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } };
             const deleteResult = await cartCollection.deleteMany(query);
 
-            res.send({insertResult, deleteResult});
+            res.send({ insertResult, deleteResult });
+        })
+
+
+        // admin dashboard stats
+        app.get('/admin-stats', verifyJWT, verifyAdmin, async (req, res) => {
+            const users = await usersCollection.estimatedDocumentCount();
+            const products = await menuCollection.estimatedDocumentCount();
+            const orders = await paymentCollection.estimatedDocumentCount();
+
+            // best way to get sum of the price feild is to use group and sum operator
+            const payments = await paymentCollection.find().toArray();
+            const revenue = payments.reduce((sum, payment) => sum + payment.price, 0)
+
+            res.send({
+                revenue,
+                users,
+                products,
+                orders
+            })
         })
 
 
